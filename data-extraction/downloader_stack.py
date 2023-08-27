@@ -16,9 +16,9 @@ class DownloaderStack(cdk.Stack):
             runtime=Runtime.PYTHON_3_9,
             handler="lambda_function.lambda_handler",
             function_name=f"{env}-downloader",
-            code=Code.from_asset(''),
+            code=Code.from_asset('lambda/'),
             role=role
-            ) # TODO: input the directory of function
+            )
         # triggering event of the function
         self.event_rule = Rule(self, "Trigger", 
                           schedule=Schedule.cron(
