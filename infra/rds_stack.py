@@ -26,12 +26,12 @@ class RdsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         self.cluster = DatabaseCluster(
             self,
-            stack_name,
+            f"{environment}-{stack_name}",
             engine=DatabaseClusterEngine.aurora_postgres(
                 version=AuroraPostgresEngineVersion.VER_14_4
             ),
             # credentials=Credentials.from_secret(rds_secret),
-            cluster_identifier=cluster_name,
+            cluster_identifier=f"{environment}-{cluster_name}",
             # default_database_name="athlete_performance_metrics",
             port=5432,
             instance_props=InstanceProps(

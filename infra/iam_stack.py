@@ -6,7 +6,7 @@ from aws_cdk import core as cdk
 import constructs
 from aws_cdk.core import Environment, IStackSynthesizer
 
-class InfraStack(cdk.Stack):
+class IAMStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, env:str, **kwargs) -> None:
         super().__init__(scope, construct_id, env=env, **kwargs)
         self.role = Role(self, "ExecutionRole",

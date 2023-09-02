@@ -12,7 +12,7 @@ class LambaFunctionStack(cdk.Stack):
         super().__init__(scope, construct_id, **kwargs)
         # function
         self.lambda_function = Function(
-            self, f"{function}-Lamba-Function", 
+            self, f"{env}-{function}-Lamba-Function", 
             runtime=Runtime.PYTHON_3_9,
             handler="lambda_function.lambda_handler",
             function_name=f"{env}-{function}-function",
