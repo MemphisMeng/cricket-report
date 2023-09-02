@@ -4,18 +4,20 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
     paths:
-      - 'pipelines/**'
-      - '.github/workflows/cicd-pipelines.yml'
+    # TODO: add more directories
+      - 'data-extraction/**'
+      - '.github/workflow.yaml'
   pull_request:
     paths:
-      - 'pipelines/**'
-      - '.github/workflows/cicd-pipelines.yml'
+    # TODO: add more directories
+      - 'data-extraction/**'
+      - '.github/workflow.yaml'
 
 env:
   AWS_REGION: us-east-1
-  APP_NAME: pbr-data-hq               # set this to your app name
+  APP_NAME: cricket database           # set this to your app name
 
 jobs:
   detect-changed-files:
@@ -29,14 +31,14 @@ jobs:
       uses: tj-actions/changed-files@v34
       with:
         files: |
-          pipelines/**
+          data-extraction/**
     - name: Get the folder name
       id: get-folder-name
       working-directory: pipelines
       run: |
         JSON="["
         for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
-            dir="$(cut -d'/' -f2 <<<"$file")" # always get the secondary folder from /pipelines
+            dir="$(cut -d'/' -f1 <<<"$file")" # always get the root directory name
             JSONline="\"$dir\","
             # we don't need to iterate on the same directory over and over, so
             # only include it when it wasn't included
@@ -44,17 +46,6 @@ jobs:
               JSON="$JSON$JSONline"
             fi
         done
-        # Updates all pipelines if infra or functions directories are updated 
-        if [[ "$JSON" == *"infra"*  || "$JSON" == *"functions"*  ]]; then
-          ALLDICTS="["
-          for dir in */; do
-            if [[ "$dir" != *"infra"*  && "$dir" != *"functions"*  ]]; then
-              JSONline="\"${dir%/}\","
-              ALLDICTS="$ALLDICTS$JSONline"
-            fi
-          done
-          JSON="$ALLDICTS"
-        fi
         # Remove last "," and add the closing bracket
         if [[ $JSON == *, ]]; then
             JSON="${JSON%?}"
@@ -62,20 +53,6 @@ jobs:
         JSON="$JSON]"
         echo "folders=$( echo "$JSON" )" >> $GITHUB_OUTPUT
         echo $JSON
-
-    # experimental step
-    # TODO: figure out what we need to do with the deleted directories
-    - name: Get deleted folder names
-      id: get-deleted-folder-name
-      run: |
-        for file in ${{ steps.changed-files.outputs.deleted_files }}; do
-          dir="$(cut -d'/' -f2 <<<"$file")" # always get the secondary folder from /services
-          if [[ -d "services/$dir" ]]; then
-            echo "services/$dir exists"
-          else
-            echo "services/$dir was deleted"
-          fi
-        done
     outputs:
       matrix: ${{ steps.get-folder-name.outputs.folders }}
 
@@ -95,7 +72,7 @@ jobs:
       id: setenv
       run: |
           echo "Running on branch ${{ github.ref }}"
-          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "prod" >> artifact.txt
           else
              echo "dev" >> artifact.txt
@@ -105,7 +82,8 @@ jobs:
       with:
         name: artifact
         path: artifact.txt
-  test: 
+
+  test: # unit test
     if: ${{ needs.detect-changed-files.outputs.matrix != '[]' && needs.detect-changed-files.outputs.matrix != '' }} # only execute the job when there is any change
     runs-on: ubuntu-latest
     needs: [detect-changed-files, setup]
@@ -149,9 +127,6 @@ jobs:
         name: artifact
     - name: Install AWS CDK
       run: 'sudo npm install -g aws-cdk'
-    - name: Install Requirements
-      working-directory: pipelines/infra
-      run: 'pip3 install -r requirements.txt'
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -160,10 +135,22 @@ jobs:
         aws-region: us-east-1
         role-to-assume: arn:aws:iam::807324965916:role/cdk-hnb659fds-deploy-role-807324965916-us-east-1
         role-duration-seconds: 14400 # You can find max duration by following this article, https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
-    - name: Deploy Pipeline
-      working-directory: pipelines/infra
-      env:
-        CLOUD_FORMATION_ROLE: arn:aws:iam::807324965916:role/cdk-hnb659fds-cfn-exec-role-807324965916-us-east-1
+    - name: Complete policies
+      run: |
+        aws iam attach-user-policy \
+        --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/CloudWatchEventsFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AWSLambda_FullAccess \
+        --policy-arn arn:aws:iam::aws:policy/IAMFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AmazonSQSFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
+        --user-name Memphis
+    - name: Deploy Artifact(s)
+      working-directory: ${{ matrix.folder }}
       run: |
         ENV=$(cat ../../artifact.txt)
-        cdk deploy "*" -c app_name=${{env.APP_NAME}} -c environment=${ENV} -c pipeline_name=${{ matrix.folder }} --require-approval never -r ${{env.CLOUD_FORMATION_ROLE}}
+        cdk deploy "*" -c app_name=${{env.APP_NAME}} \
+        -c environment=${ENV} -c database=${{ matrix.folder }} \
+        --require-approval never \
+        # -r ${{env.CLOUD_FORMATION_ROLE}}
