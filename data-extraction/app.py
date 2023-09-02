@@ -1,5 +1,6 @@
-import os
+import os, json
 from constructs import Construct
+from aws_cdk.aws_secretsmanager import Secret, SecretStringGenerator
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyDocument, PolicyStatement, Effect, ManagedPolicy
 from aws_cdk.aws_rds import (
     Credentials,
@@ -66,15 +67,27 @@ class DataExtractionStack(Stack):
             engine=DatabaseClusterEngine.aurora_postgres(
                 version=AuroraPostgresEngineVersion.VER_14_4
             ),
-            # credentials=Credentials.from_secret(rds_secret),
+            credentials=Credentials.from_secret(
+                Secret(
+                    self,
+                    "RDSCricketSecret",
+                    description=f"Secrets for {environment} Cricket DB",
+                    secret_name=f"rds-credentials/cricket-db-{environment}",
+                    generate_secret_string=SecretStringGenerator(
+                        secret_string_template=json.dumps({"username": "admin"}),
+                        generate_string_key="password",
+                        exclude_punctuation=True,
+                    ),
+                )
+            ),
             cluster_identifier=f"{environment}-cricket-cluster",
             # default_database_name="athlete_performance_metrics",
             port=5432,
-            instance_props=InstanceProps(
-                instance_type=InstanceType.of(InstanceClass.T3, InstanceSize.MEDIUM),
-                # security_groups=[security_group],
-                # vpc=vpc,
-            ),
+            # instance_props=InstanceProps(
+            #     instance_type=InstanceType.of(InstanceClass.T3, InstanceSize.MEDIUM),
+            #     # security_groups=[security_group],
+            #     # vpc=vpc,
+            # ),
         )
 
 if __name__ == '__main__':
