@@ -24,12 +24,12 @@ from aws_cdk import App
 
 class DataExtractionStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, environment: str, code_directory:str, stack_name:str, cluster_name:str, **kwargs
+        self, scope: Construct, construct_id: str, environment: str, code_directory:str, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         self.role = Role(self, "ExecutionRole",
                 role_name=f"{enviroment}-execution-role",
-                description=f"The IAM Role assumed to execute the part that downloads data from the website to the database in the {env} environment",
+                description=f"The IAM Role assumed to execute the part that downloads data from the website to the database in the {enviroment} environment",
             managed_policies=[
                 'arn:aws:iam::aws:policy/AWSLambdaExecute',
                 'arn:aws:iam::aws:policy/AmazonSQSFullAccess',
@@ -62,12 +62,12 @@ class DataExtractionStack(Stack):
         
         self.rds = DatabaseCluster(
             self,
-            f"{environment}-{stack_name}",
+            f"{environment}-cluster-database",
             engine=DatabaseClusterEngine.aurora_postgres(
                 version=AuroraPostgresEngineVersion.VER_14_4
             ),
             # credentials=Credentials.from_secret(rds_secret),
-            cluster_identifier=f"{environment}-{cluster_name}",
+            cluster_identifier=f"{environment}-cricket-cluster",
             # default_database_name="athlete_performance_metrics",
             port=5432,
             instance_props=InstanceProps(
@@ -84,5 +84,10 @@ if __name__ == '__main__':
 
     account = os.environ["CDK_DEFAULT_ACCOUNT"]
     region = os.environ["CDK_DEFAULT_REGION"]
+
+    dataExtractionStack = DataExtractionStack(
+        app,
+        enviroment
+    )
 
     app.synth()
