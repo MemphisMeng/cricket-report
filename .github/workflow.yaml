@@ -1,0 +1,169 @@
+name: Pipeline Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'pipelines/**'
+      - '.github/workflows/cicd-pipelines.yml'
+  pull_request:
+    paths:
+      - 'pipelines/**'
+      - '.github/workflows/cicd-pipelines.yml'
+
+env:
+  AWS_REGION: us-east-1
+  APP_NAME: pbr-data-hq               # set this to your app name
+
+jobs:
+  detect-changed-files:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+    - name: Get changed files in pipelines
+      id: changed-files-specific
+      uses: tj-actions/changed-files@v34
+      with:
+        files: |
+          pipelines/**
+    - name: Get the folder name
+      id: get-folder-name
+      working-directory: pipelines
+      run: |
+        JSON="["
+        for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
+            dir="$(cut -d'/' -f2 <<<"$file")" # always get the secondary folder from /pipelines
+            JSONline="\"$dir\","
+            # we don't need to iterate on the same directory over and over, so
+            # only include it when it wasn't included
+            if [[ "$JSON" != *"$JSONline"* ]]; then
+              JSON="$JSON$JSONline"
+            fi
+        done
+        # Updates all pipelines if infra or functions directories are updated 
+        if [[ "$JSON" == *"infra"*  || "$JSON" == *"functions"*  ]]; then
+          ALLDICTS="["
+          for dir in */; do
+            if [[ "$dir" != *"infra"*  && "$dir" != *"functions"*  ]]; then
+              JSONline="\"${dir%/}\","
+              ALLDICTS="$ALLDICTS$JSONline"
+            fi
+          done
+          JSON="$ALLDICTS"
+        fi
+        # Remove last "," and add the closing bracket
+        if [[ $JSON == *, ]]; then
+            JSON="${JSON%?}"
+        fi
+        JSON="$JSON]"
+        echo "folders=$( echo "$JSON" )" >> $GITHUB_OUTPUT
+        echo $JSON
+
+    # experimental step
+    # TODO: figure out what we need to do with the deleted directories
+    - name: Get deleted folder names
+      id: get-deleted-folder-name
+      run: |
+        for file in ${{ steps.changed-files.outputs.deleted_files }}; do
+          dir="$(cut -d'/' -f2 <<<"$file")" # always get the secondary folder from /services
+          if [[ -d "services/$dir" ]]; then
+            echo "services/$dir exists"
+          else
+            echo "services/$dir was deleted"
+          fi
+        done
+    outputs:
+      matrix: ${{ steps.get-folder-name.outputs.folders }}
+
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        check-latest: true
+        cache-dependency-path: package-lock.json
+    # - uses: actions/setup-python@v4
+    #   with:
+    #     python-version: '3.9'
+    #     cache: 'pip' # caching pip dependencies
+    - name: Set Environment
+      id: setenv
+      run: |
+          echo "Running on branch ${{ github.ref }}"
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "prod" >> artifact.txt
+          else
+             echo "dev" >> artifact.txt
+          fi
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact
+        path: artifact.txt
+  test: 
+    if: ${{ needs.detect-changed-files.outputs.matrix != '[]' && needs.detect-changed-files.outputs.matrix != '' }} # only execute the job when there is any change
+    runs-on: ubuntu-latest
+    needs: [detect-changed-files, setup]
+    strategy:
+      fail-fast: false # will NOT cancel all in-progress and queued jobs in the matrix if any job in the matrix fails
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changed-files.outputs.matrix) }}
+    steps:  
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+    - name: Install pytest
+      run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+    - name: Run Unit Test
+      working-directory: pipelines/${{ matrix.folder }}
+      run: |
+        if [ -d "tests/" ]; then
+          echo "Running Unit Tests" 
+          pytest tests/test*
+        else
+          echo "No Unit Tests to run" 
+        fi
+          
+  deploy:
+    if: ${{ needs.detect-changed-files.outputs.matrix != '[]' && needs.detect-changed-files.outputs.matrix != '' }} # only execute the job when there is any change
+    runs-on: ubuntu-latest
+    needs: [detect-changed-files, setup, test]
+    strategy:
+      fail-fast: false # will NOT cancel all in-progress and queued jobs in the matrix if any job in the matrix fails
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changed-files.outputs.matrix) }}
+    steps:  
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: artifact
+    - name: Install AWS CDK
+      run: 'sudo npm install -g aws-cdk'
+    - name: Install Requirements
+      working-directory: pipelines/infra
+      run: 'pip3 install -r requirements.txt'
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::807324965916:role/cdk-hnb659fds-deploy-role-807324965916-us-east-1
+        role-duration-seconds: 14400 # You can find max duration by following this article, https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
+    - name: Deploy Pipeline
+      working-directory: pipelines/infra
+      env:
+        CLOUD_FORMATION_ROLE: arn:aws:iam::807324965916:role/cdk-hnb659fds-cfn-exec-role-807324965916-us-east-1
+      run: |
+        ENV=$(cat ../../artifact.txt)
+        cdk deploy "*" -c app_name=${{env.APP_NAME}} -c environment=${ENV} -c pipeline_name=${{ matrix.folder }} --require-approval never -r ${{env.CLOUD_FORMATION_ROLE}}
