@@ -148,7 +148,7 @@ jobs:
     - name: Deploy Artifact(s)
       working-directory: ${{ matrix.folder }}
       run: |
-        ENV=$(cat ../../artifact.txt)
+        ENV=$(cat ../artifact.txt)
         cdk deploy "*" -c app_name=${{env.APP_NAME}} \
         -c environment=${ENV} -c database=${{ matrix.folder }} \
         --require-approval never \
