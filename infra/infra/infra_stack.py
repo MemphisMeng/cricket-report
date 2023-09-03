@@ -18,6 +18,7 @@ class InfraStack(Stack):
         #     self, "InfraQueue",
         #     visibility_timeout=Duration.seconds(300),
         # )
-        self.vpc = Vpc(self, f"{environemnt}-Vpc"
+        self.vpc = Vpc(self, f"{environemnt}-Vpc",
+                       vpc_name=f"{environemnt}-Vpc"
             # ip_addresses=IpAddresses.cidr("10.0.0.0/16")
             )
