@@ -33,9 +33,9 @@ class DataExtractionStack(Stack):
                 assumed_by=ServicePrincipal('lambda.amazonaws.com'),
                 description=f"The IAM Role assumed to execute the part that downloads data from the website to the database in the {environment} environment",
                 managed_policies=[
-                    ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AWSLambdaExecute'),
-                    ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AmazonSQSFullAccess'),
-                    ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess')
+                    ManagedPolicy.from_aws_managed_policy_name('AWSLambda_FullAccess'),
+                    ManagedPolicy.from_aws_managed_policy_name('AmazonRDSFullAccess'),
+                    # ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess')
                 ], 
                 inline_policies={
                 'misc-policies': PolicyDocument(
@@ -62,7 +62,7 @@ class DataExtractionStack(Stack):
             code=Code.from_asset(code_directory),
             role=self.role
             )
-        vpc = Vpc.from_lookup(self, f"VPC", vpc_name=f"{environment}-vpc")
+        vpc = Vpc.from_lookup(self, f"VPC", vpc_name=f"{environment}-Vpc")
         self.rds = DatabaseCluster(
             self,
             f"{environment}-cluster-database",
@@ -76,7 +76,7 @@ class DataExtractionStack(Stack):
                     description=f"Secrets for {environment} Cricket DB",
                     secret_name=f"rds-credentials/cricket-db-{environment}",
                     generate_secret_string=SecretStringGenerator(
-                        secret_string_template=json.dumps({"username": "admin"}),
+                        secret_string_template=json.dumps({"username": "memphis"}),
                         generate_string_key="password",
                         exclude_punctuation=True,
                     ),
@@ -86,7 +86,7 @@ class DataExtractionStack(Stack):
             # default_database_name="athlete_performance_metrics",
             port=5432,
             instance_props=InstanceProps(
-                instance_type=InstanceType.of(InstanceClass.STANDARD5, InstanceSize.MEDIUM),
+                # instance_type=InstanceType.of(InstanceClass., InstanceSize.MEDIUM),
                 # security_groups=[security_group],
                 vpc=vpc,
             ),
