@@ -95,10 +95,9 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 2
-    - name: Install pytest
-      run: |
-          python -m pip install --upgrade pip
-          pip install pytest
+    - name: Install Test Requirements
+      working-directory: ${{ matrix.folder }}
+      run: 'pip3 install -r requirements-dev.txt'
     - name: Run Unit Test
       working-directory: ${{ matrix.folder }}
       run: |
@@ -134,6 +133,9 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
         role-duration-seconds: 14400 # You can find max duration by following this article, https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
+    - name: Install Requirements
+      working-directory: ${{ matrix.folder }}
+      run: 'pip3 install -r requirements.txt'
     - name: Complete policies
       run: |
         aws iam attach-user-policy \
