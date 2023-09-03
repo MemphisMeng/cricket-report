@@ -4,7 +4,7 @@ from aws_cdk import (
     # aws_sqs as sqs,
 )
 from constructs import Construct
-from aws_cdk.aws_ec2 import Vpc, IpAddresses
+from aws_cdk.aws_ec2 import Vpc
 
 class InfraStack(Stack):
 
@@ -18,5 +18,6 @@ class InfraStack(Stack):
         #     self, "InfraQueue",
         #     visibility_timeout=Duration.seconds(300),
         # )
-        self.vpc = Vpc(self, f"{environemnt}-Vpc",
-            ip_addresses=IpAddresses.cidr("10.0.0.0/16"))
+        self.vpc = Vpc(self, f"{environemnt}-Vpc"
+            # ip_addresses=IpAddresses.cidr("10.0.0.0/16")
+            )

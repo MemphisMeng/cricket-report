@@ -7,7 +7,7 @@ from infra.infra_stack import InfraStack
 # resource in infra/infra_stack.py
 def test_sqs_queue_created():
     app = core.App()
-    stack = InfraStack(app, "infra")
+    stack = InfraStack(app, "infra", environemnt="test")
     template = assertions.Template.from_stack(stack)
 
 #     template.has_resource_properties("AWS::SQS::Queue", {
