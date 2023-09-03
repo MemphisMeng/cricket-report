@@ -7,7 +7,7 @@ from data_extraction.data_extraction_stack import DataExtractionStack
 # resource in data_extraction/data_extraction_stack.py
 def test_sqs_queue_created():
     app = core.App()
-    stack = DataExtractionStack(app, "data-extraction-2")
+    stack = DataExtractionStack(app, "data-extraction")
     template = assertions.Template.from_stack(stack)
 
 #     template.has_resource_properties("AWS::SQS::Queue", {

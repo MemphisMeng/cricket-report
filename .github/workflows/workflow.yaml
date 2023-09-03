@@ -104,7 +104,7 @@ jobs:
       run: |
         if [ -d "tests/" ]; then
           echo "Running Unit Tests" 
-          pytest tests/test*
+          pytest tests/unit*
         else
           echo "No Unit Tests to run" 
         fi
