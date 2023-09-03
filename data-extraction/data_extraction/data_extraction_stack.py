@@ -30,12 +30,14 @@ class DataExtractionStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         self.role = Role(self, "ExecutionRole",
                 role_name=f"{environment}-execution-role",
+                assumed_by=ServicePrincipal('lambda.amazonaws.com'),
                 description=f"The IAM Role assumed to execute the part that downloads data from the website to the database in the {environment} environment",
-            managed_policies=[
-                'arn:aws:iam::aws:policy/AWSLambdaExecute',
-                'arn:aws:iam::aws:policy/AmazonSQSFullAccess',
-                'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
-            ], inline_policies={
+                managed_policies=[
+                    ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AWSLambdaExecute'),
+                    ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AmazonSQSFullAccess'),
+                    ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess')
+                ], 
+                inline_policies={
                 'misc-policies': PolicyDocument(
                     statements=[
                         PolicyStatement(
@@ -47,10 +49,10 @@ class DataExtractionStack(Stack):
                             actions=['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
                             effect=Effect.ALLOW,
                             resources=['arn:aws:logs:*:*:*']
-                        )
-                    ]
-                )
-            })
+                            )
+                        ]
+                    )
+                })
 
         self.downloader_function = Function(
             self, f"{environment}-Downloader", 
@@ -60,12 +62,12 @@ class DataExtractionStack(Stack):
             code=Code.from_asset(code_directory),
             role=self.role
             )
-        
+        vpc = Vpc.from_lookup(self, f"VPC", vpc_name=f"{environment}-vpc")
         self.rds = DatabaseCluster(
             self,
             f"{environment}-cluster-database",
             engine=DatabaseClusterEngine.aurora_postgres(
-                version=AuroraPostgresEngineVersion.VER_14_4
+                version=AuroraPostgresEngineVersion.VER_13_4
             ),
             credentials=Credentials.from_secret(
                 Secret(
@@ -83,9 +85,9 @@ class DataExtractionStack(Stack):
             cluster_identifier=f"{environment}-cricket-cluster",
             # default_database_name="athlete_performance_metrics",
             port=5432,
-            # instance_props=InstanceProps(
-            #     instance_type=InstanceType.of(InstanceClass.T3, InstanceSize.MEDIUM),
-            #     # security_groups=[security_group],
-            #     # vpc=vpc,
-            # ),
+            instance_props=InstanceProps(
+                instance_type=InstanceType.of(InstanceClass.STANDARD5, InstanceSize.MEDIUM),
+                # security_groups=[security_group],
+                vpc=vpc,
+            ),
         )

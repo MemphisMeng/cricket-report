@@ -3,12 +3,12 @@ import os
 
 import aws_cdk as cdk
 
-from data_extraction.data_extraction_stack import DataExtraction2Stack
+from data_extraction.data_extraction_stack import DataExtractionStack
 
 
 app = cdk.App()
 environment = app.node.try_get_context("environment")
-DataExtraction2Stack(app, "DataExtractionStack", environment=environment, code_directory="lambda/"
+DataExtractionStack(app, "DataExtractionStack", environment=environment, code_directory="lambda/"
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
