@@ -97,7 +97,9 @@ jobs:
         fetch-depth: 2
     - name: Install Test Requirements
       working-directory: ${{ matrix.folder }}
-      run: 'pip3 install -r requirements-dev.txt'
+      run: |
+        pip3 install -r requirements-dev.txt
+        pip3 install -r requirements.txt
     - name: Run Unit Test
       working-directory: ${{ matrix.folder }}
       run: |
