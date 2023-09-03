@@ -35,7 +35,7 @@ class DataExtractionStack(Stack):
                 managed_policies=[
                     ManagedPolicy.from_aws_managed_policy_name('AWSLambda_FullAccess'),
                     ManagedPolicy.from_aws_managed_policy_name('AmazonRDSFullAccess'),
-                    # ManagedPolicy.from_aws_managed_policy_name('arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess')
+                    ManagedPolicy.from_aws_managed_policy_name('AmazonRDSDataFullAccess')
                 ], 
                 inline_policies={
                 'misc-policies': PolicyDocument(
