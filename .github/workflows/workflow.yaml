@@ -8,11 +8,13 @@ on:
     paths:
     # TODO: add more directories
       - 'data-extraction/**'
+      - 'infra/**'
       - '.github/workflow.yaml'
   pull_request:
     paths:
     # TODO: add more directories
       - 'data-extraction/**'
+      - 'infra/**'
       - '.github/workflow.yaml'
 
 env:
@@ -51,6 +53,10 @@ jobs:
             JSON="${JSON%?}"
         fi
         JSON="$JSON]"
+        # if infra is modified, re-deploy everything artifact
+        if [["$JSON" == *"infra"* ]]; then
+          JSON="\"data-extraction\",\"infra\""
+        fi
         echo "folders=$( echo "$JSON" )" >> $GITHUB_OUTPUT
         echo $JSON
     outputs:
@@ -64,10 +70,6 @@ jobs:
       with:
         check-latest: true
         cache-dependency-path: package-lock.json
-    # - uses: actions/setup-python@v4
-    #   with:
-    #     python-version: '3.9'
-    #     cache: 'pip' # caching pip dependencies
     - name: Set Environment
       id: setenv
       run: |
@@ -141,13 +143,12 @@ jobs:
     - name: Complete policies
       run: |
         aws iam attach-user-policy \
-        --policy-arn arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess \
         --policy-arn arn:aws:iam::aws:policy/CloudWatchEventsFullAccess \
         --policy-arn arn:aws:iam::aws:policy/AWSLambda_FullAccess \
         --policy-arn arn:aws:iam::aws:policy/IAMFullAccess \
         --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationFullAccess \
-        --policy-arn arn:aws:iam::aws:policy/AmazonSQSFullAccess \
         --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AmazonSSMFullAccess \
         --user-name Memphis
     - name: Deploy Artifact(s)
       working-directory: ${{ matrix.folder }}
@@ -155,5 +156,4 @@ jobs:
         ENV=$(cat ../artifact.txt)
         cdk deploy "*" -c app_name=${{env.APP_NAME}} \
         -c environment=${ENV} -c database=${{ matrix.folder }} \
-        --require-approval never \
-        # -r ${{env.CLOUD_FORMATION_ROLE}}
+        --require-approval never
