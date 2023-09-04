@@ -8,7 +8,7 @@ from data_extraction.data_extraction_stack import DataExtractionStack
 # resource in data_extraction/data_extraction_stack.py
 def test_sqs_queue_created():
     app = core.App()
-    ENV = {"account": os.environ['CDK_DEFAULT_ACCOUNT'], "region": os.environ['CDK_DEFAULT_REGION']} # environment context
+    ENV = {"account": app.account, "region": app.region} # environment context
     stack = DataExtractionStack(app, "data-extraction", environment="test", code_directory="lambda/", env=ENV)
     template = assertions.Template.from_stack(stack)
 
