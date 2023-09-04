@@ -1,4 +1,5 @@
 import aws_cdk as core
+import os
 import aws_cdk.assertions as assertions
 
 from data_extraction.data_extraction_stack import DataExtractionStack
