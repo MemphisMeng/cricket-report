@@ -1,6 +1,8 @@
 from constructs import Construct
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyDocument, PolicyStatement, Effect, ManagedPolicy
 from aws_cdk.aws_lambda import Function, Runtime, Code
+from aws_cdk.aws_events import Rule, Schedule
+from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk import Stack
 
 
@@ -45,4 +47,18 @@ class DataExtractionStack(Stack):
             code=Code.from_asset(code_directory),
             role=self.role
             )
-        
+        self.event_rule = Rule(
+                self,
+                "LambdaWorkerRule",
+                schedule=Schedule.cron(
+                    year='*',
+                    month='?',
+                    week_day='*',
+                    day='*',
+                    hour='*',
+                    minute='*'
+                ),
+            )
+        self.event_rule.add_target(
+                LambdaFunction(self.downloader_function, retry_attempts=2)
+            )
