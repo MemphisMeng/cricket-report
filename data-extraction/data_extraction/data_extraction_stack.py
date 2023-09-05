@@ -1,7 +1,5 @@
 from constructs import Construct
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyDocument, PolicyStatement, Effect, ManagedPolicy
-
-from aws_cdk.aws_ec2 import Vpc
 from aws_cdk.aws_lambda import Function, Runtime, Code
 from aws_cdk import Stack
 
@@ -47,5 +45,4 @@ class DataExtractionStack(Stack):
             code=Code.from_asset(code_directory),
             role=self.role
             )
-        vpc = Vpc.from_lookup(self, f"VPC", vpc_name=f"{environment}-Vpc")
         
