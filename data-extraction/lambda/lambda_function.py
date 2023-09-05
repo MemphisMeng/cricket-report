@@ -3,14 +3,11 @@ from functions import *
 import logging
 from pythonjsonlogger import jsonlogger
 
-# Load environment
-ENV = config.load_env()
-
 LOGGER = logging.getLogger()
 # Replace the LambdaLoggerHandler formatter :
 LOGGER.handlers[0].setFormatter(jsonlogger.JsonFormatter())
 # Set default logging level
-LOGGING_LEVEL = getattr(logging, ENV["LOGGING_LEVEL"])
+LOGGING_LEVEL = getattr(logging, "INFO")
 LOGGER.setLevel(LOGGING_LEVEL)
 
 
@@ -45,6 +42,6 @@ def lambda_handler(event, context):
 
     """
     LOGGER.info("Starting lambda executing.", extra=_lambda_context(context))
-    service.main(event, ENV)
+    service.main(event, {})
     LOGGER.info("Successful lambda execution.", extra=_lambda_context(context))
     return {"statusCode": 200}
