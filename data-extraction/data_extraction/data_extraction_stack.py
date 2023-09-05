@@ -52,11 +52,10 @@ class DataExtractionStack(Stack):
                 "LambdaWorkerRule",
                 schedule=Schedule.cron(
                     year='*',
-                    month='?',
-                    week_day='*',
-                    day='*',
-                    hour='*',
-                    minute='*'
+                    month='*',
+                    day='1',
+                    hour='0',
+                    minute='0'
                 ),
             )
         self.event_rule.add_target(
