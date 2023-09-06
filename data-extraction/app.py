@@ -7,9 +7,12 @@ from data_extraction.data_extraction_stack import DataExtractionStack
 
 
 app = cdk.App()
-ENV = {"account": app.account, "region": app.region} # environment context
+ENV = cdk.Environment(
+    account=os.environ['CDK_DEFAULT_ACCOUNT'], 
+    region=os.environ['CDK_DEFAULT_REGION'])
 environment = app.node.try_get_context("environment")
-DataExtractionStack(app, "DataExtractionStack", environment=environment, code_directory="lambda/", env=ENV
+DataExtractionStack(app, "DataExtractionStack", 
+                    environment=environment, code_directory="lambda/", env=ENV
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.

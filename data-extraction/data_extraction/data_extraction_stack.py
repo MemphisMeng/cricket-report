@@ -1,9 +1,15 @@
 from constructs import Construct
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyDocument, PolicyStatement, Effect, ManagedPolicy
 from aws_cdk.aws_lambda import Function, Runtime, Code
+from aws_cdk.aws_lambda_python_alpha import PythonLayerVersion
+from aws_cdk.aws_ec2 import (
+    Vpc,
+    SubnetType,
+    SubnetSelection,
+)
 from aws_cdk.aws_events import Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk import Stack
+from aws_cdk import Stack, BundlingOptions, Environment
 
 
 class DataExtractionStack(Stack):
@@ -34,18 +40,46 @@ class DataExtractionStack(Stack):
                             actions=['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
                             effect=Effect.ALLOW,
                             resources=['arn:aws:logs:*:*:*']
-                            )
+                        ),
+                        PolicyStatement(
+                            actions=['ec2:CreateNetworkInterface', 'ec2:DescribeNetworkInterfaces', 'ec2:DeleteNetworkInterface'],
+                            effect=Effect.ALLOW,
+                            resources=['*']
+                        )
                         ]
                     )
                 })
 
+        vpc = Vpc.from_lookup(
+                self, f"ImportVPC",
+                vpc_id='vpc-06feb24bad800e677' 
+                # vpc_name=f"{environment}-Vpc"
+            )
+        selection = vpc.select_subnets(
+                    subnet_type=SubnetType.PRIVATE_WITH_EGRESS
+                )
         self.downloader_function = Function(
             self, f"{environment}-Downloader", 
             runtime=Runtime.PYTHON_3_9,
             handler="lambda_function.lambda_handler",
             function_name=f"{environment}-downloader",
-            code=Code.from_asset(code_directory),
-            role=self.role
+            code=Code.from_asset(
+                code_directory,
+                bundling=BundlingOptions(
+                image=Runtime.PYTHON_3_9.bundling_image,
+                command=["bash", "-c", "pip install -r requirements.txt -t /asset-output && cp -au . /asset-output"]
+            )),
+            role=self.role,
+            # layers=[
+            #     PythonLayerVersion(
+            #         self, f"{environment}-Python-Layer",
+            #         entry=code_directory,
+            #         compatible_runtimes=[Runtime.PYTHON_3_9]
+            #     )
+            # ],
+            vpc=vpc,
+            vpc_subnets=SubnetSelection(subnets=selection.subnets),
+            environment={'environment': environment}
             )
         self.event_rule = Rule(
                 self,
