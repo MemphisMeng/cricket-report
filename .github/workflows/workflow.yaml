@@ -1,0 +1,168 @@
+name: Pipeline Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+    # TODO: add more directories
+      - 'data-extraction/**'
+      - 'infra/**'
+      - '.github/workflow.yaml'
+  pull_request:
+    paths:
+    # TODO: add more directories
+      - 'data-extraction/**'
+      - 'infra/**'
+      - '.github/workflow.yaml'
+
+env:
+  AWS_REGION: us-east-1
+  APP_NAME: cricket database           # set this to your app name
+
+jobs:
+  detect-changed-files:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+    - name: Get changed files in the root directory
+      id: changed-files-specific
+      uses: tj-actions/changed-files@v34
+      with:
+        files: |
+          data-extraction/**
+    - name: Get the folder name
+      id: get-folder-name
+      # working-directory: pipelines
+      run: |
+        JSON="["
+        for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
+            dir="$(cut -d'/' -f1 <<<"$file")" # always get the root directory name
+            JSONline="\"$dir\","
+            # we don't need to iterate on the same directory over and over, so
+            # only include it when it wasn't included
+            if [[ "$JSON" != *"$JSONline"* ]]; then
+              JSON="$JSON$JSONline"
+            fi
+        done
+        # Remove last "," and add the closing bracket
+        if [[ $JSON == *, ]]; then
+            JSON="${JSON%?}"
+        fi
+        JSON="$JSON]"
+        # if infra is modified, re-deploy everything artifact
+        if [["$JSON" == *"infra"* ]]; then
+          JSON="\"data-extraction\",\"infra\""
+        fi
+        echo "folders=$( echo "$JSON" )" >> $GITHUB_OUTPUT
+        echo $JSON
+    outputs:
+      matrix: ${{ steps.get-folder-name.outputs.folders }}
+
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        check-latest: true
+        cache-dependency-path: package-lock.json
+    - name: Set Environment
+      id: setenv
+      run: |
+          echo "Running on branch ${{ github.ref }}"
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "prod" >> artifact.txt
+          else
+             echo "dev" >> artifact.txt
+          fi
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact
+        path: artifact.txt
+
+  test: # unit test
+    if: ${{ needs.detect-changed-files.outputs.matrix != '[]' && needs.detect-changed-files.outputs.matrix != '' }} # only execute the job when there is any change
+    runs-on: ubuntu-latest
+    needs: [detect-changed-files, setup]
+    strategy:
+      fail-fast: false # will NOT cancel all in-progress and queued jobs in the matrix if any job in the matrix fails
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changed-files.outputs.matrix) }}
+    steps:  
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: arn:aws:iam::142114255837:role/github-actions-role
+        aws-region: us-east-1
+        role-duration-seconds: 14400 # You can find max duration by following this article, https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
+    - name: Install Test Requirements
+      working-directory: ${{ matrix.folder }}
+      run: |
+        pip3 install -r requirements-dev.txt
+        pip3 install -r requirements.txt
+    - name: Run Unit Test
+      working-directory: ${{ matrix.folder }}
+      run: |
+        if [ -d "tests/" ]; then
+          echo "Running Unit Tests" 
+          pytest tests/unit*
+        else
+          echo "No Unit Tests to run" 
+        fi
+          
+  deploy:
+    if: ${{ needs.detect-changed-files.outputs.matrix != '[]' && needs.detect-changed-files.outputs.matrix != '' }} # only execute the job when there is any change
+    runs-on: ubuntu-latest
+    needs: [detect-changed-files, setup, test]
+    strategy:
+      fail-fast: false # will NOT cancel all in-progress and queued jobs in the matrix if any job in the matrix fails
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changed-files.outputs.matrix) }}
+    steps:  
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: artifact
+    - name: Install AWS CDK
+      run: 'sudo npm install -g aws-cdk'
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: arn:aws:iam::142114255837:role/github-actions-role
+        aws-region: us-east-1
+        role-duration-seconds: 14400 # You can find max duration by following this article, https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
+    - name: Install Requirements
+      working-directory: ${{ matrix.folder }}
+      run: 'pip3 install -r requirements.txt'
+    - name: Complete policies
+      run: |
+        aws iam attach-user-policy \
+        --policy-arn arn:aws:iam::aws:policy/CloudWatchEventsFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AWSLambda_FullAccess \
+        --policy-arn arn:aws:iam::aws:policy/IAMFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationFullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
+        --policy-arn arn:aws:iam::aws:policy/AmazonSSMFullAccess \
+        --user-name Memphis
+    - name: Deploy Artifact(s)
+      working-directory: ${{ matrix.folder }}
+      run: |
+        ENV=$(cat ../artifact.txt)
+        cdk deploy "*" -c app_name=${{env.APP_NAME}} \
+        -c environment=${ENV} -c database=${{ matrix.folder }} \
+        --require-approval never
