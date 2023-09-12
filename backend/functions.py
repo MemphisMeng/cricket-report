@@ -50,7 +50,7 @@ def build_sql_create_statement(table_name: str, columns: str, primary_key:list=N
     """    
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     sql_raw_statement = open(
-        os.path.join(__location__, "./../queries/create.sql")
+        os.path.join(__location__, "queries/create.sql")
     ).read()
     if primary_key:
         columns += f", PRIMARY KEY ({','.join(primary_key)})"
@@ -72,7 +72,7 @@ def build_sql_insert_statement(table_name: str, columns: str, values: str) -> st
     """    
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     sql_raw_statement = open(
-        os.path.join(__location__, "./../queries/insert.sql")
+        os.path.join(__location__, "queries/insert.sql")
     ).read()
     insert_statement = sql_raw_statement.format(table_name=table_name, columns=columns, values=values)
     return insert_statement
