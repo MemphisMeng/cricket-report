@@ -1,0 +1,94 @@
+{
+  "version": "34.0.0",
+  "artifacts": {
+    "DataExtractionStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "DataExtractionStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "DataExtractionStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://142114255837/us-east-1",
+      "properties": {
+        "templateFile": "DataExtractionStack.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::142114255837:role/cdk-hnb659fds-deploy-role-142114255837-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::142114255837:role/cdk-hnb659fds-cfn-exec-role-142114255837-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-142114255837-us-east-1/08e72b9cac68a14fa8ecba9f1118142870f3cf53e8399c8d49c0e9d4ec407fde.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "DataExtractionStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::142114255837:role/cdk-hnb659fds-lookup-role-142114255837-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "DataExtractionStack.assets"
+      ],
+      "metadata": {
+        "/DataExtractionStack/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ExecutionRole605A040B"
+          }
+        ],
+        "/DataExtractionStack/dev-Downloader/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "devDownloaderSecurityGroupD824C399"
+          }
+        ],
+        "/DataExtractionStack/dev-Downloader/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "devDownloader3573AEF8"
+          }
+        ],
+        "/DataExtractionStack/LambdaWorkerRule/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LambdaWorkerRule58CC89D4"
+          }
+        ],
+        "/DataExtractionStack/LambdaWorkerRule/AllowEventRuleDataExtractionStackdevDownloaderE290A3F4": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LambdaWorkerRuleAllowEventRuleDataExtractionStackdevDownloaderE290A3F429FD408B"
+          }
+        ],
+        "/DataExtractionStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/DataExtractionStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/DataExtractionStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "DataExtractionStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,414 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "DataExtractionStack": {
+        "id": "DataExtractionStack",
+        "path": "DataExtractionStack",
+        "children": {
+          "ExecutionRole": {
+            "id": "ExecutionRole",
+            "path": "DataExtractionStack/ExecutionRole",
+            "children": {
+              "ImportExecutionRole": {
+                "id": "ImportExecutionRole",
+                "path": "DataExtractionStack/ExecutionRole/ImportExecutionRole",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.94.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "DataExtractionStack/ExecutionRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "description": "The IAM Role assumed to execute the part that downloads data from the website to the database in the dev environment",
+                    "managedPolicyArns": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/AWSLambda_FullAccess"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/AmazonRDSFullAccess"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/AmazonRDSDataFullAccess"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/SecretsManagerReadWrite"
+                          ]
+                        ]
+                      }
+                    ],
+                    "policies": [
+                      {
+                        "policyName": "misc-policies",
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "events:PutEvents",
+                              "Effect": "Allow",
+                              "Resource": "*"
+                            },
+                            {
+                              "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": "arn:aws:logs:*:*:*"
+                            },
+                            {
+                              "Action": [
+                                "ec2:CreateNetworkInterface",
+                                "ec2:DescribeNetworkInterfaces",
+                                "ec2:DeleteNetworkInterface"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": "*"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    ],
+                    "roleName": "dev-execution-role"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.94.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.94.0"
+            }
+          },
+          "ImportVPC": {
+            "id": "ImportVPC",
+            "path": "DataExtractionStack/ImportVPC",
+            "children": {
+              "PublicSubnet1": {
+                "id": "PublicSubnet1",
+                "path": "DataExtractionStack/ImportVPC/PublicSubnet1",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.94.0"
+                }
+              },
+              "PublicSubnet2": {
+                "id": "PublicSubnet2",
+                "path": "DataExtractionStack/ImportVPC/PublicSubnet2",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.94.0"
+                }
+              },
+              "PrivateSubnet1": {
+                "id": "PrivateSubnet1",
+                "path": "DataExtractionStack/ImportVPC/PrivateSubnet1",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.94.0"
+                }
+              },
+              "PrivateSubnet2": {
+                "id": "PrivateSubnet2",
+                "path": "DataExtractionStack/ImportVPC/PrivateSubnet2",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.94.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.Resource",
+              "version": "2.94.0"
+            }
+          },
+          "dev-Downloader": {
+            "id": "dev-Downloader",
+            "path": "DataExtractionStack/dev-Downloader",
+            "children": {
+              "Code": {
+                "id": "Code",
+                "path": "DataExtractionStack/dev-Downloader/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "DataExtractionStack/dev-Downloader/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.94.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "DataExtractionStack/dev-Downloader/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.94.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.94.0"
+                }
+              },
+              "SecurityGroup": {
+                "id": "SecurityGroup",
+                "path": "DataExtractionStack/dev-Downloader/SecurityGroup",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "DataExtractionStack/dev-Downloader/SecurityGroup/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "groupDescription": "Automatic security group for Lambda Function DataExtractionStackdevDownloaderE290A3F4",
+                        "securityGroupEgress": [
+                          {
+                            "cidrIp": "0.0.0.0/0",
+                            "description": "Allow all outbound traffic by default",
+                            "ipProtocol": "-1"
+                          }
+                        ],
+                        "vpcId": "vpc-06feb24bad800e677"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                      "version": "2.94.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+                  "version": "2.94.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "DataExtractionStack/dev-Downloader/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": "cdk-hnb659fds-assets-142114255837-us-east-1",
+                      "s3Key": "5efd2c2fa288f367abd9bdc3f7c665992c4b02d6985f4eabb1e61b84f1341161.zip"
+                    },
+                    "environment": {
+                      "variables": {
+                        "environment": "dev"
+                      }
+                    },
+                    "functionName": "dev-downloader",
+                    "handler": "lambda_function.lambda_handler",
+                    "role": {
+                      "Fn::GetAtt": [
+                        "ExecutionRole605A040B",
+                        "Arn"
+                      ]
+                    },
+                    "runtime": "python3.9",
+                    "vpcConfig": {
+                      "subnetIds": [
+                        "subnet-030b7f93171e369f9",
+                        "subnet-0cd0b120531d3c613"
+                      ],
+                      "securityGroupIds": [
+                        {
+                          "Fn::GetAtt": [
+                            "devDownloaderSecurityGroupD824C399",
+                            "GroupId"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.94.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.Function",
+              "version": "2.94.0"
+            }
+          },
+          "LambdaWorkerRule": {
+            "id": "LambdaWorkerRule",
+            "path": "DataExtractionStack/LambdaWorkerRule",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "DataExtractionStack/LambdaWorkerRule/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Events::Rule",
+                  "aws:cdk:cloudformation:props": {
+                    "scheduleExpression": "cron(0 0 1 * ? *)",
+                    "state": "ENABLED",
+                    "targets": [
+                      {
+                        "id": "Target0",
+                        "arn": {
+                          "Fn::GetAtt": [
+                            "devDownloader3573AEF8",
+                            "Arn"
+                          ]
+                        },
+                        "retryPolicy": {
+                          "maximumRetryAttempts": 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_events.CfnRule",
+                  "version": "2.94.0"
+                }
+              },
+              "AllowEventRuleDataExtractionStackdevDownloaderE290A3F4": {
+                "id": "AllowEventRuleDataExtractionStackdevDownloaderE290A3F4",
+                "path": "DataExtractionStack/LambdaWorkerRule/AllowEventRuleDataExtractionStackdevDownloaderE290A3F4",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "devDownloader3573AEF8",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "events.amazonaws.com",
+                    "sourceArn": {
+                      "Fn::GetAtt": [
+                        "LambdaWorkerRule58CC89D4",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.94.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_events.Rule",
+              "version": "2.94.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "DataExtractionStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "DataExtractionStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.94.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.1.146"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "DataExtractionStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.94.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "DataExtractionStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.94.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.94.0"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.1.146"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.94.0"
+    }
+  }
+}

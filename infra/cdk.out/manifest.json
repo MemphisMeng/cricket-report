@@ -1,0 +1,250 @@
+{
+  "version": "34.0.0",
+  "artifacts": {
+    "InfraStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "InfraStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "InfraStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "InfraStack.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2c1cac2811c5790528edaccaceb388368649250aaef7597b8201105a22a6be01.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "InfraStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "InfraStack.assets"
+      ],
+      "metadata": {
+        "/InfraStack/None-Vpc/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpc06432299"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet1SubnetA0366E3B"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet1RouteTable941B6A87"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet1RouteTableAssociation4EDCF2C9"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet1DefaultRouteE835973C"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet1/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet1EIP27C22858"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet1/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet1NATGatewayEC782091"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet2SubnetC2E2E2B5"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet2RouteTable4364805E"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet2RouteTableAssociationA2CA81FF"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet2DefaultRoute2A7B02B6"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet2/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet2EIP02070021"
+          }
+        ],
+        "/InfraStack/None-Vpc/PublicSubnet2/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPublicSubnet2NATGateway21219A7D"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet1Subnet839DEB78"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet1RouteTableFC1373A1"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet1RouteTableAssociation35AE03ED"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet1DefaultRoute45F86AD2"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet2SubnetF69F183E"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet2RouteTable52898EE1"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet2RouteTableAssociation123C5F4E"
+          }
+        ],
+        "/InfraStack/None-Vpc/PrivateSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcPrivateSubnet2DefaultRoute94AAA2E2"
+          }
+        ],
+        "/InfraStack/None-Vpc/IGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcIGWAE2BB974"
+          }
+        ],
+        "/InfraStack/None-Vpc/VPCGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneVpcVPCGW2E192F9D"
+          }
+        ],
+        "/InfraStack/RDSCricketSecret/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RDSCricketSecret4FFD08F4"
+          }
+        ],
+        "/InfraStack/RDSCricketSecret/Attachment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RDSCricketSecretAttachmentD4E6749A"
+          }
+        ],
+        "/InfraStack/None-cluster-database/Subnets/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneclusterdatabaseSubnets4EC1490C"
+          }
+        ],
+        "/InfraStack/None-cluster-database/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneclusterdatabaseSecurityGroupB6CC1F1F"
+          }
+        ],
+        "/InfraStack/None-cluster-database/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Noneclusterdatabase08CCCC2B"
+          }
+        ],
+        "/InfraStack/None-cluster-database/Instance1": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneclusterdatabaseInstance11F2A579B"
+          }
+        ],
+        "/InfraStack/None-cluster-database/Instance2": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "NoneclusterdatabaseInstance2C00E79E0"
+          }
+        ],
+        "/InfraStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/InfraStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/InfraStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/InfraStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "InfraStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
