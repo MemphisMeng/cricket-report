@@ -47,7 +47,7 @@ if __name__ == '__main__':
         innings_create_statement = build_sql_create_statement('innings', innings_columns, ['game_id', 'innings_order'])
         player_universe_create_statement = build_sql_create_statement('player_universe', player_universe_columns, ['player_id'])
         print("Table creation queries were successfully created!")
-    except:
+    except Exception as e:
         print(f"Encountered error when building table creation queries, error detail: {e}")
         sys.exit(1)
 
