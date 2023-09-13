@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    <h1>User List</h1>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Gender</th>
+      </tr>
+      <% rows.forEach (function (row) { %>
+      <tr>
+        <td><%= row.name %></td>
+        <td><%= row.player_id %></td>
+        <td><%= row.gender %></td>
+      </tr>
+      <% }) %>
+    </table>
+    
+</html>
