@@ -1,12 +1,18 @@
 import * as d3 from "d3";
-import * as axios from "axios";
+const fs = require('fs')
+const sqlite3 = require('sqlite3').verbose();
 
-const dataSet = async function getData() {
-    return await axios.get('/vis');
-}
+// open the database connection
+let db = new sqlite3.Database('./../zelus.db', (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the cricket database.');
+  });
 
 async function drawChart() {
-    const teams  = await dataSet();
+    const sql = fs.readFileSync('../queries/games_per_team.sql').toString()
+    const teams  = await db.all(sql);
     const data = teams.map((d) => (
         {
             ...d,
